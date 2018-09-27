@@ -1,4 +1,4 @@
-import pyrealsense as rs
+import pyrealsense2 as rs
 
 def post_process(image):
 	spatial_filter = rs.spatial_filter()

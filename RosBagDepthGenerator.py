@@ -1,8 +1,10 @@
-import pyrealsense as rs
-from PostProcess import post_process
+import pyrealsense2 as rs
+from Common.PostProcess import post_process
+import numpy as np
+import cv2
 
 class RosBagGenerator:
-	def __init__(self, ros_file_path, max_distance):
+	def __init__(self, ros_file_path, max_distance, debug=False):
 		self.max_distance = max_distance
 		config = rs.config()
 		config.enable_device_from_file(ros_file_path)
@@ -13,6 +15,8 @@ class RosBagGenerator:
 		frame_number = 0
 		while True:
 			frames = self.pipeline.wait_for_frames()
+			if debug:
+				print(frames[0].get_frame_number())
 			if frames[0].get_frame_number() < frame_number:
 				break
 			frame_number = frames[0].get_frame_number()
@@ -20,6 +24,11 @@ class RosBagGenerator:
 				self.intrin = frames.get_profile().as_video_stream_profile().get_intrinsics()
 				depth = frames.get_depth_frame()
 				self.depths.append(depth)
+				if debug:
+					depth_data = depth.as_frame().get_data()
+					depth_image = np.asanyarray(depth_data)
+					cv2.imshow("Sequance Playback", depth_image)
+					cv2.waitKey(1)
 
 	def grab(self):
 		for depth in (self.depths):
